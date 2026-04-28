@@ -278,14 +278,24 @@ defmodule ExTURN.Client do
   (RFC 5766 §7.2) that the caller must ship on the original socket before
   closing it. This releases the 5-tuple on the TURN server so that a future
   Allocate from the same source port does not collide and earn a 437
-  "Allocation Mismatch" (RFC 5766 §6.2) — the failure mode observed against
-  Cloudflare TURN, which keeps allocations alive until TTL (default 600s).
+  "Allocation Mismatch" (RFC 5766 §6.2).
 
   In any other state, there is nothing to release; the client is transitioned
   to `:error` and no datagram is produced.
 
   The request is fire-and-forget: the client is already `:error` on return,
   so a late 437/438 response from the server is ignored.
+
+  ## Example
+
+      case Client.close(client) do
+        {:send, dst, datagram, _client} ->
+          :gen_udp.send(socket, dst, datagram)
+          :gen_udp.close(socket)
+
+        {:ok, _client} ->
+          :gen_udp.close(socket)
+      end
   """
   @spec close(t()) :: {:ok, t()} | {:send, addr(), binary(), t()}
   def close(%__MODULE__{state: :error} = client), do: {:ok, client}

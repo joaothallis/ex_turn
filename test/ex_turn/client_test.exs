@@ -88,7 +88,7 @@ defmodule ExTURN.ClientTest do
     assert {:ok, %Nonce{value: @new_nonce}} = Message.get_attribute(new_req, Nonce)
   end
 
-  describe "close" do
+  describe "close/1" do
     test "state :new transitions to :error without sending" do
       {:ok, client} = Client.new(@turn_uri, @username, @password)
 
